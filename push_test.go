@@ -7,15 +7,14 @@ import (
 	umeng "github.com/crazytaxii/gomeng"
 )
 
-func TestUmengInit(t *testing.T) {
-	umeng.Init2(
-		true,
-		"app_key_4_android",
-		"app_secret_4_android",
-	)
-}
+const (
+	APP_KEY           = "app_key"
+	APP_MASTER_SECRET = "app_master_secret"
+	PRODUCT_MODE      = false
+)
 
 func TestPush2SingleUser(t *testing.T) {
+	client := umeng.NewClient(PRODUCT_MODE, APP_KEY, APP_MASTER_SECRET)
 	payload := map[string]interface{}{
 		"display_type": "notification",
 		"body": map[string]interface{}{
@@ -33,13 +32,15 @@ func TestPush2SingleUser(t *testing.T) {
 		},
 	}
 
-	err := umeng.Push2SingleUser("android", "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG", &payload)
+	err := client.Push2SingleUser("AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG",
+		&payload)
 	if err != nil {
 		fmt.Println("err:", err)
 	}
 }
 
 func TestPush2MultiUsers(t *testing.T) {
+	client := umeng.NewClient(PRODUCT_MODE, APP_KEY, APP_MASTER_SECRET)
 	payload := map[string]interface{}{
 		"display_type": "notification",
 		"body": map[string]interface{}{
@@ -57,13 +58,15 @@ func TestPush2MultiUsers(t *testing.T) {
 		},
 	}
 
-	err := umeng.Push2MultiUsers("android", []string{"AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG"}, &payload)
+	err := client.Push2MultiUsers([]string{"AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG"},
+		&payload)
 	if err != nil {
 		fmt.Println("err:", err)
 	}
 }
 
 func TestPush2AllUsers(t *testing.T) {
+	client := umeng.NewClient(PRODUCT_MODE, APP_KEY, APP_MASTER_SECRET)
 	payload := map[string]interface{}{
 		"display_type": "notification",
 		"body": map[string]interface{}{
@@ -81,7 +84,7 @@ func TestPush2AllUsers(t *testing.T) {
 		},
 	}
 
-	err := umeng.Push2AllUsers("android", &payload)
+	err := client.Push2AllUsers(&payload)
 	if err != nil {
 		fmt.Println("err:", err)
 	}

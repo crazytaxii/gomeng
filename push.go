@@ -12,24 +12,20 @@ import (
 /**
  * 推送给单用户（单播）
  */
-func Push2SingleUser(platform string, deviceToken string,
-	payload *map[string]interface{}) error {
-	url := fmt.Sprintf("%s%s", DOMAIN, "/api/send")
-
-	if !(platform == PLATFORM_IOS || platform == PLATFORM_ANDROID) {
-		return fmt.Errorf("Umeng push failed, wrong platform")
-	}
+func (client *Client) Push2SingleUser(deviceToken string, payload *map[string]interface{}) error {
+	url := fmt.Sprintf("https://%s/api/send", DOMAIN)
 
 	param := map[string]interface{}{
-		"appkey":        configMap[platform].AppKey,
-		"timestamp":     time.Now().Unix(),
-		"type":          "unicast",
-		"device_tokens": deviceToken,
-		"payload":       *payload,
+		"appkey":          client.AppKey,
+		"timestamp":       time.Now().Unix(),
+		"type":            "unicast",
+		"device_tokens":   deviceToken,
+		"payload":         *payload,
+		"production_mode": client.ProductMode,
 	}
 
 	// 签名
-	sign, err := doSign("POST", url, param, configMap[platform].AppMasterSecret)
+	sign, err := doSign("POST", url, param, client.AppMasterSecret)
 	if err != nil {
 		return err
 	}
@@ -54,7 +50,6 @@ func Push2SingleUser(platform string, deviceToken string,
 	if err != nil {
 		return err
 	}
-	fmt.Println("result:", result)
 	if result.Ret != "SUCCESS" {
 		return fmt.Errorf("Umeng push failed, error message: %s, error code: %s",
 			result.Data.ErrMsg, result.Data.ErrCode)
@@ -65,24 +60,20 @@ func Push2SingleUser(platform string, deviceToken string,
 /**
  * 推送给多用户（列播）
  */
-func Push2MultiUsers(platform string, listDeviceToken []string,
-	payload *map[string]interface{}) error {
-	url := fmt.Sprintf("%s%s", DOMAIN, "/api/send")
-
-	if !(platform == PLATFORM_IOS || platform == PLATFORM_ANDROID) {
-		return fmt.Errorf("Umeng push failed, wrong platform")
-	}
+func (client *Client) Push2MultiUsers(listDeviceToken []string, payload *map[string]interface{}) error {
+	url := fmt.Sprintf("https://%s/api/send", DOMAIN)
 
 	param := map[string]interface{}{
-		"appkey":        configMap[platform].AppKey,
-		"timestamp":     time.Now().Unix(),
-		"type":          "listcast",
-		"device_tokens": strings.Join(listDeviceToken, ","),
-		"payload":       *payload,
+		"appkey":          client.AppKey,
+		"timestamp":       time.Now().Unix(),
+		"type":            "listcast",
+		"device_tokens":   strings.Join(listDeviceToken, ","),
+		"payload":         *payload,
+		"production_mode": client.ProductMode,
 	}
 
 	// 签名
-	sign, err := doSign("POST", url, param, configMap[platform].AppMasterSecret)
+	sign, err := doSign("POST", url, param, client.AppMasterSecret)
 	if err != nil {
 		return err
 	}
@@ -118,22 +109,19 @@ func Push2MultiUsers(platform string, listDeviceToken []string,
  * 推送给所有用户（广播）
  * 默认每天可推送10次
  */
-func Push2AllUsers(platform string, payload *map[string]interface{}) error {
+func (client *Client) Push2AllUsers(payload *map[string]interface{}) error {
 	url := fmt.Sprintf("%s%s", DOMAIN, "/api/send")
 
-	if !(platform == PLATFORM_IOS || platform == PLATFORM_ANDROID) {
-		return fmt.Errorf("Umeng push failed, wrong platform")
-	}
-
 	param := map[string]interface{}{
-		"appkey":    configMap[platform].AppKey,
-		"timestamp": time.Now().Unix(),
-		"type":      "broadcast",
-		"payload":   *payload,
+		"appkey":          client.AppKey,
+		"timestamp":       time.Now().Unix(),
+		"type":            "broadcast",
+		"payload":         *payload,
+		"production_mode": client.ProductMode,
 	}
 
 	// 签名
-	sign, err := doSign("POST", url, param, configMap[platform].AppMasterSecret)
+	sign, err := doSign("POST", url, param, client.AppMasterSecret)
 	if err != nil {
 		return err
 	}

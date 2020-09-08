@@ -32,8 +32,7 @@ func TestPush2SingleUser(t *testing.T) {
 		},
 	}
 
-	err := client.Push2SingleUser("AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG",
-		&payload)
+	err := client.Push(payload, "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG")
 	if err != nil {
 		fmt.Println("err:", err)
 	}
@@ -58,8 +57,7 @@ func TestPush2MultiUsers(t *testing.T) {
 		},
 	}
 
-	err := client.Push2MultiUsers([]string{"AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG"},
-		&payload)
+	err := client.ListCast(payload, "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG")
 	if err != nil {
 		fmt.Println("err:", err)
 	}
@@ -84,7 +82,7 @@ func TestPush2AllUsers(t *testing.T) {
 		},
 	}
 
-	err := client.Push2AllUsers(&payload)
+	err := client.Broadcast(payload)
 	if err != nil {
 		fmt.Println("err:", err)
 	}

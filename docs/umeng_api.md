@@ -1,20 +1,17 @@
-# 友盟推送API
+# 友盟 U-Push Golang SDK
 
-**使用API前需要在Web后台的App应用信息页面获取Appkey和App Master Secret，同时在Web后台添加服务器IP地址做IP白名单安全验证或关闭IP白名单。**
+**使用 API 前需要在Web后台的 App 应用信息页面获取 App key 和 App Master Secret，同时在 Web 后台添加服务器 IP 地址至白名单安或关闭IP白名单。**
 
 ### 向指定的用户推送消息（单播）
-|参数|说明|
-|---|---|
-|platform|用户的设备平台|
-|deviceToken|友盟消息推送服务对设备的唯一标识|
-|payload|消息具体内容|
 
-|设备平台|对应字符串|
-|iOS|"ios"|
-|Android|"Android"|
+| 参数 | 说明 |
+| --- | --- |
+| deviceToken | 友盟消息推送服务对设备的唯一标识 |
+| payload | 消息具体内容 |
 
-#### Android平台payload
-```JSON
+#### Android 平台 payload
+
+```json
 {
     "appkey": "xx", // 必填，应用唯一标识
     "timestamp": "xx", // 必填，时间戳，10位或者13位均可，时间戳有效期为10分钟
@@ -106,8 +103,9 @@
 
 ```
 
-#### iOS平台payload
-```JSON
+#### iOS 平台 payload
+
+```json
 {
     "appkey": "xx", // 必填，应用唯一标识
     "timestamp": "xx", // 必填，时间戳，10位或者13位均可，时间戳有效期为10分钟

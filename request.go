@@ -14,7 +14,7 @@ func (c *Client) Request(method, url string, param map[string]interface{}) error
 		return fmt.Errorf("Sign failed, error: %s", err.Error())
 	}
 
-	bytes, err := json.Marshal(sign)
+	bytes, err := json.Marshal(param)
 	if err != nil {
 		return fmt.Errorf("JSON marshal failed, error: %s", err.Error())
 	}

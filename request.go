@@ -1,37 +1,56 @@
 package gomeng
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-
-	"github.com/parnurzeal/gorequest"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 )
 
-func (c *Client) Request(method, url string, param map[string]interface{}) error {
+func (c *Client) genReqParams(payload map[string]interface{}, reqType string, deviceTokens ...string) map[string]interface{} {
+	p := map[string]interface{}{
+		"appkey":          c.key,
+		"timestamp":       time.Now().Unix(),
+		"type":            reqType,
+		"payload":         payload,
+		"production_mode": c.productMode,
+	}
+	if len(deviceTokens) > 0 {
+		p["device_tokens"] = strings.Join(deviceTokens, ",")
+	}
+	return p
+}
+
+func (c *Client) doPost(param map[string]interface{}, endpoint string) (*ResponseMessage, error) {
+	url := BaseURL + endpoint
 	// sign
-	sign, err := c.doSign(method, url, param)
+	sign, err := c.doSign(http.MethodPost, url, param)
 	if err != nil {
-		return fmt.Errorf("Sign failed, error: %s", err.Error())
+		return nil, fmt.Errorf("Sign failed, error: %s", err.Error())
 	}
 
-	bytes, err := json.Marshal(param)
+	b, err := json.Marshal(param)
 	if err != nil {
-		return fmt.Errorf("JSON marshal failed, error: %s", err.Error())
+		return nil, err
 	}
 
-	_, body, errs := gorequest.New().Post(fmt.Sprintf("%s?sign=%s", url, sign)).Send(string(bytes)).End()
-	if len(errs) > 0 {
-		return fmt.Errorf("HTTP request failed, error: %s", errs[0])
-	}
-	res := &ResponseMessage{}
-	err = json.Unmarshal([]byte(body), res)
+	resp, err := c.Post(fmt.Sprintf("%s?sign=%s", url, sign), "application/json", bytes.NewReader(b))
 	if err != nil {
-		return fmt.Errorf("JSON unmarshal failed, error: %s", err.Error())
+		return nil, err
 	}
-	if res.Ret != "SUCCESS" {
-		return fmt.Errorf("Umeng push failed, error message: %s, error code: %d",
-			res.Data.ErrMsg, res.Data.ErrCode)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rm := &ResponseMessage{}
+	if err := rm.Unmarshal(body); err != nil {
+		return nil, err
+	}
+	return rm, nil
 }

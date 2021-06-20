@@ -1,16 +1,26 @@
 package gomeng
 
+import (
+	"net/http"
+	"time"
+)
+
+const DefaultTimeout = 10 * time.Second
+
 type Client struct {
-	ProductMode     bool
-	Platform        string
-	AppKey          string
-	AppMasterSecret string
+	productMode bool
+	key         string
+	secret      string
+	*http.Client
 }
 
-func NewClient(productMode bool, appKey string, appMasterSecret string) *Client {
+func NewClient(productMode bool, key, secret string, timeout time.Duration) *Client {
 	return &Client{
-		ProductMode:     productMode,
-		AppKey:          appKey,
-		AppMasterSecret: appMasterSecret,
+		productMode: productMode,
+		key:         key,
+		secret:      secret,
+		Client: &http.Client{
+			Timeout: timeout,
+		},
 	}
 }

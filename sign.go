@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 )
 
 /**
@@ -17,10 +16,9 @@ func (c *Client) doSign(method string, url string, param map[string]interface{})
 	if err != nil {
 		return "", err
 	}
-	str := fmt.Sprintf("%s%s%s%s", method, url, string(body), c.AppMasterSecret)
+	str := method + url + string(body) + c.secret
 	hasher := md5.New()
-	_, err = hasher.Write([]byte(str))
-	if err != nil {
+	if _, err := hasher.Write([]byte(str)); err != nil {
 		return "", err
 	}
 	return hex.EncodeToString(hasher.Sum(nil)), nil

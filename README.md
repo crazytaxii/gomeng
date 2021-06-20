@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-    client := umeng.NewClient(false, "app_key", "app_master_secret")
+    client := umeng.NewClient(false, "app_key", "app_master_secret", 10 * time.Second)
     payload := map[string]interface{}{
         "display_type": "notification",
         "body": map[string]interface{}{
@@ -35,19 +35,16 @@ func main() {
         },
     }
 
-    err := client.Push(payload, "device_token")
-    if err != nil {
-        fmt.Println("err:", err.Error())
+    if err := client.Push(payload, "device_token"); err != nil {
+        log.Fatalf("err: %v", err)
     }
 
-    err := client.Listcast(payload, "device_token1", "device_token2", "device_token3")
-    if err != nil {
-        fmt.Println("err:", err.Error())
+    if err := client.Listcast(payload, "device_token1", "device_token2", "device_token3"); err != nil {
+        log.Fatalf("err: %v", err)
     }
 
-    err := client.Broadcast(payload)
-    if err != nil {
-        fmt.Println("err:", err.Error())
+    if err := client.Broadcast(payload); err != nil {
+        fmt.Fatalf("err: %v", err)
     }
 }
 ```

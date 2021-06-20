@@ -1,10 +1,15 @@
 package gomeng
 
-const (
-	BaseURL = "https://msgapi.umeng.com/api"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-	Push      = "send"
-	Broadcast = "send"
+const (
+	BaseURL = "https://msgapi.umeng.com/api/"
+
+	APIPush      = "send"
+	APIBroadcast = "send"
 )
 
 type ResponseMessage struct {
@@ -13,6 +18,21 @@ type ResponseMessage struct {
 		MsgID   string `json:"msg_id"`
 		TaskID  string `json:"task_id"`
 		ErrMsg  string `json:"error_msg"`
-		ErrCode int    `json:"error_code"`
+		ErrCode string `json:"error_code"`
 	} `json:"data"`
+}
+
+func (rm *ResponseMessage) Unmarshal(data []byte) error {
+	if err := json.Unmarshal(data, rm); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (rm *ResponseMessage) Error() error {
+	if rm.Ret != "SUCCESS" {
+		return fmt.Errorf("Umeng push failed, error message: %s, error code: %s",
+			rm.Data.ErrMsg, rm.Data.ErrCode)
+	}
+	return nil
 }

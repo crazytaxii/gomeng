@@ -1,20 +1,18 @@
-package gomeng_test
+package gomeng
 
 import (
-	"fmt"
 	"testing"
-
-	umeng "github.com/crazytaxii/gomeng"
 )
 
 const (
-	APP_KEY           = "app_key"
-	APP_MASTER_SECRET = "app_master_secret"
-	PRODUCT_MODE      = false
+	TestAppKey      = "app_key"
+	TestAppSecret   = "app_secret"
+	TestProductMode = false
+	TestDeviceToken = "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG"
 )
 
 func TestPush2SingleUser(t *testing.T) {
-	client := umeng.NewClient(PRODUCT_MODE, APP_KEY, APP_MASTER_SECRET)
+	c := NewClient(TestProductMode, TestAppKey, TestAppSecret, DefaultTimeout)
 	payload := map[string]interface{}{
 		"display_type": "notification",
 		"body": map[string]interface{}{
@@ -32,14 +30,13 @@ func TestPush2SingleUser(t *testing.T) {
 		},
 	}
 
-	err := client.Push(payload, "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG")
-	if err != nil {
-		fmt.Println("err:", err)
+	if err := c.Push(payload, TestDeviceToken); err != nil {
+		t.Fatalf("err: %v", err)
 	}
 }
 
 func TestPush2MultiUsers(t *testing.T) {
-	client := umeng.NewClient(PRODUCT_MODE, APP_KEY, APP_MASTER_SECRET)
+	c := NewClient(TestProductMode, TestAppKey, TestAppSecret, DefaultTimeout)
 	payload := map[string]interface{}{
 		"display_type": "notification",
 		"body": map[string]interface{}{
@@ -57,14 +54,13 @@ func TestPush2MultiUsers(t *testing.T) {
 		},
 	}
 
-	err := client.ListCast(payload, "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG")
-	if err != nil {
-		fmt.Println("err:", err)
+	if err := c.ListCast(payload, "AtOAal-11NoRhG1KJv_aq1aij5O_aWwMlvvklGNu1LmG"); err != nil {
+		t.Fatalf("err: %v", err)
 	}
 }
 
 func TestPush2AllUsers(t *testing.T) {
-	client := umeng.NewClient(PRODUCT_MODE, APP_KEY, APP_MASTER_SECRET)
+	c := NewClient(TestProductMode, TestAppKey, TestAppSecret, DefaultTimeout)
 	payload := map[string]interface{}{
 		"display_type": "notification",
 		"body": map[string]interface{}{
@@ -82,8 +78,7 @@ func TestPush2AllUsers(t *testing.T) {
 		},
 	}
 
-	err := client.Broadcast(payload)
-	if err != nil {
-		fmt.Println("err:", err)
+	if err := c.Broadcast(payload); err != nil {
+		t.Fatalf("err: %v", err)
 	}
 }

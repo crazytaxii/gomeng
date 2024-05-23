@@ -5,22 +5,25 @@ import (
 	"time"
 )
 
-const DefaultTimeout = 10 * time.Second
+const defaultTimeout = 10 * time.Second
 
-type Client struct {
-	productMode bool
-	key         string
-	secret      string
-	*http.Client
+type Config struct {
+	AppKey         string        `json:"app_key" yaml:"appKey"`
+	AppSecret      string        `json:"app_secret" yaml:"appSecret"`
+	ProductionMode bool          `json:"production_mode" yaml:"productionMode"`
+	Timeout        time.Duration `json:"timeout" yaml:"timeout"`
 }
 
-func NewClient(productMode bool, key, secret string, timeout time.Duration) *Client {
+type Client struct {
+	cfg     *Config
+	rawhttp *http.Client
+}
+
+func NewClient(cfg *Config) *Client {
 	return &Client{
-		productMode: productMode,
-		key:         key,
-		secret:      secret,
-		Client: &http.Client{
-			Timeout: timeout,
+		cfg: cfg,
+		rawhttp: &http.Client{
+			Timeout: fallback2DefaultIfZero(cfg.Timeout),
 		},
 	}
 }

@@ -7,9 +7,9 @@
 
 **需要先在友盟官网创建应用获得 App Key 和 App Secret！**
 
-+ `Push()` 单播
-+ `Listcast()` 多播
-+ `Broadcast()`广播（默认每天可推送10次）
+- `Unicast()` 单播
+- `Listcast()` 多播
+- `Broadcast()`广播（默认每天可推送10次）
 
 ```go
 import (
@@ -17,8 +17,14 @@ import (
 )
 
 func main() {
-    client := umeng.NewClient(false, "app_key", "app_master_secret", 10 * time.Second)
-    payload := map[string]interface{}{
+    cfg := &umeng.Config{
+        AppKey: "app_key",
+        AppSecret: "app_master_secret",
+        ProductionMode: false,
+    }
+    client := umeng.NewClient(cfg)
+
+    demo := umeng.Payload{
         "display_type": "notification",
         "body": map[string]interface{}{
             "ticker":   "test_ticker",
@@ -35,16 +41,31 @@ func main() {
         },
     }
 
-    if err := client.Push(payload, "device_token"); err != nil {
-        log.Fatalf("err: %v", err)
+    retMsg, err := client.Unicast(context.Background() ,demo, "device_token")
+    if err != nil {
+        log.Fatalf("failed to unicast: %v", err)
+    }
+    if err := rm.Error(); err != nil {
+        // business error
+        log.Fatal(err)
     }
 
-    if err := client.Listcast(payload, "device_token1", "device_token2", "device_token3"); err != nil {
-        log.Fatalf("err: %v", err)
+    retMsg, err := client.Listcast(context.Background(), demo, "device_token1", "device_token2", "device_token3")
+    if err != nil {
+        log.Fatalf("failed to listcast: %v", err)
+    }
+    if err := rm.Error(); err != nil {
+        // business error
+        log.Fatal(err)
     }
 
-    if err := client.Broadcast(payload); err != nil {
-        fmt.Fatalf("err: %v", err)
+    retMsg, err := client.Broadcast(context.Background(), demo)
+    if err != nil {
+        fmt.Fatalf("failed to broadcast: %v", err)
+    }
+    if err := rm.Error(); err != nil {
+        // business error
+        log.Fatal(err)
     }
 }
 ```

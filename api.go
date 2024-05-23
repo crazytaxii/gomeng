@@ -1,38 +1,45 @@
 package gomeng
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "fmt"
 
 const (
-	BaseURL = "https://msgapi.umeng.com/api/"
+	baseURL = "https://msgapi.umeng.com"
 
-	APIPush      = "send"
-	APIBroadcast = "send"
+	apiPush      = "api/send"
+	apiBroadcast = "api/send"
 )
 
-type ResponseMessage struct {
-	Ret  string `json:"ret"`
-	Data struct {
-		MsgID   string `json:"msg_id"`
-		TaskID  string `json:"task_id"`
-		ErrMsg  string `json:"error_msg"`
-		ErrCode string `json:"error_code"`
-	} `json:"data"`
-}
+type requestType string
 
-func (rm *ResponseMessage) Unmarshal(data []byte) error {
-	if err := json.Unmarshal(data, rm); err != nil {
-		return err
+const (
+	unicastRequest   requestType = "unicast"
+	listcastRequest  requestType = "listcast"
+	broadcastRequest requestType = "broadcast"
+)
+
+type ReturnState string
+
+const (
+	SuccessState ReturnState = "SUCCESS"
+	FailState    ReturnState = "FAIL"
+)
+
+type (
+	Data struct {
+		MessageID  string `json:"msg_id"`
+		TaskID     string `json:"task_id"`
+		ErrMessage string `json:"error_msg"`
+		ErrCode    string `json:"error_code"`
 	}
-	return nil
-}
+	ResponseMessage struct {
+		Ret  ReturnState `json:"ret"`
+		Data `json:"data"`
+	}
+)
 
 func (rm *ResponseMessage) Error() error {
-	if rm.Ret != "SUCCESS" {
-		return fmt.Errorf("Umeng push failed, error message: %s, error code: %s",
-			rm.Data.ErrMsg, rm.Data.ErrCode)
+	if rm.Ret == SuccessState {
+		return nil
 	}
-	return nil
+	return fmt.Errorf("error %s: %s", rm.ErrCode, rm.ErrMessage)
 }

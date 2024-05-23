@@ -2,21 +2,25 @@ package gomeng
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
-func (c *Client) genReqParams(payload map[string]interface{}, reqType string, deviceTokens ...string) map[string]interface{} {
+type Payload map[string]interface{}
+
+func (c *Client) genRequestParams(payload Payload, reqType requestType, deviceTokens ...string) map[string]interface{} {
 	p := map[string]interface{}{
-		"appkey":          c.key,
+		"appkey":          c.cfg.AppKey,
 		"timestamp":       time.Now().Unix(),
 		"type":            reqType,
 		"payload":         payload,
-		"production_mode": c.productMode,
+		"production_mode": c.cfg.ProductionMode,
 	}
 	if len(deviceTokens) > 0 {
 		p["device_tokens"] = strings.Join(deviceTokens, ",")
@@ -24,22 +28,31 @@ func (c *Client) genReqParams(payload map[string]interface{}, reqType string, de
 	return p
 }
 
-func (c *Client) doPost(param map[string]interface{}, endpoint string) (*ResponseMessage, error) {
-	url := BaseURL + endpoint
-	// sign
-	sign, err := c.doSign(http.MethodPost, url, param)
+func (c *Client) doPost(ctx context.Context, param map[string]interface{}, endpoint string) (*ResponseMessage, error) {
+	// e.g. https://msgapi.umeng.com/api/send
+	url, err := url.JoinPath(baseURL, endpoint)
 	if err != nil {
-		return nil, fmt.Errorf("Sign failed, error: %s", err.Error())
+		return nil, err
 	}
-
 	b, err := json.Marshal(param)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.Post(fmt.Sprintf("%s?sign=%s", url, sign), "application/json", bytes.NewReader(b))
+	// do sign
+	sign, err := sign(http.MethodPost, url, c.cfg.AppSecret, b)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sign error: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, joinSign(url, sign), bytes.NewReader(b))
+	if err != nil {
+		return nil, fmt.Errorf("new request error: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.rawhttp.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request error: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -49,7 +62,7 @@ func (c *Client) doPost(param map[string]interface{}, endpoint string) (*Respons
 	}
 
 	rm := &ResponseMessage{}
-	if err := rm.Unmarshal(body); err != nil {
+	if err := json.Unmarshal(body, rm); err != nil {
 		return nil, err
 	}
 	return rm, nil

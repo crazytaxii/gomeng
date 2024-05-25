@@ -1,4 +1,4 @@
-# gomeng
+# gomeng ![CI Status](https://github.com/crazytaxii/gomeng/actions/workflows/ci.yaml/badge.svg)
 
 友盟消息推送 Golang SDK
 友盟开发者中心 U-Push API 集成文档：[传送门](https://developer.umeng.com/docs/66632/detail/68343)
